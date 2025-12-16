@@ -17,7 +17,6 @@ import {
 } from "matrix-js-sdk/src/matrix";
 import { KnownMembership, type Membership } from "matrix-js-sdk/src/types";
 import { logger as rootLogger } from "matrix-js-sdk/src/logger";
-import { secureRandomString } from "matrix-js-sdk/src/randomstring";
 import { CallType } from "matrix-js-sdk/src/webrtc/call";
 import { type IWidgetApiRequest, type ClientWidgetApi, type IWidgetData } from "matrix-widget-api";
 import {
@@ -36,10 +35,8 @@ import { ElementWidgetActions } from "../stores/widgets/ElementWidgetActions";
 import WidgetStore from "../stores/WidgetStore";
 import { WidgetMessagingStore, WidgetMessagingStoreEvent } from "../stores/widgets/WidgetMessagingStore";
 import ActiveWidgetStore, { ActiveWidgetStoreEvent } from "../stores/ActiveWidgetStore";
-import { getCurrentLanguage } from "../languageHandler";
 import { Anonymity, PosthogAnalytics } from "../PosthogAnalytics";
 import { isVideoRoom } from "../utils/video-rooms";
-import { FontWatcher } from "../settings/watchers/FontWatcher";
 import { type JitsiCallMemberContent, JitsiCallMemberEventType } from "../call-types";
 import SdkConfig from "../SdkConfig.ts";
 import DMRoomMap from "../utils/DMRoomMap.ts";
@@ -744,24 +741,23 @@ export class ElementCall extends Call {
      * @returns
      */
     private static generateWidgetUrl(client: MatrixClient, roomId: string, opts: WidgetGenerationParameters = {}): URL {
-        const elementCallUrlOverride = SettingsStore.getValue("Developer.elementCallUrl");
-        const url = elementCallUrlOverride
-            ? new URL(elementCallUrlOverride)
-            : // this strips hash fragment from baseUrl
-              new URL("./widgets/element-call/index.html#", window.location.href);
+    
+        const url =  new URL(`http://localhost:3000/widget/video/${roomId}`)
+           
 
         // Splice together the Element Call URL for this call
         // Parameters can be found in https://github.com/element-hq/element-call/blob/livekit/src/UrlParams.ts.
         const params = new URLSearchParams({
             // Template variables are used, so that this can be configured using the widget data.
-            perParticipantE2EE: "$perParticipantE2EE",
             userId: client.getUserId()!,
             deviceId: client.getDeviceId()!,
             roomId: roomId,
             baseUrl: client.baseUrl,
-            lang: getCurrentLanguage().replace("_", "-"),
-            fontScale: (FontWatcher.getRootFontSize() / FontWatcher.getBrowserDefaultFontSize()).toString(),
-            theme: "$org.matrix.msc2873.client_theme",
+            widgetId: 'test',
+            accessToken: client.getAccessToken()!,
+            parentUrl: window.location.origin,
+            chatRoomId: roomId,
+            spaceRoomId: roomId,
         });
 
         if (typeof opts.skipLobby === "boolean") {
@@ -823,7 +819,7 @@ export class ElementCall extends Call {
         const url = ElementCall.generateWidgetUrl(client, roomId);
         return WidgetStore.instance.addVirtualWidget(
             {
-                id: secureRandomString(24), // So that it's globally unique
+                id: 'test', // So that it's globally unique
                 creatorUserId: client.getUserId()!,
                 name: "Element Call",
                 type: WidgetType.CALL.preferred,
