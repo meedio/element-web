@@ -742,7 +742,7 @@ export class ElementCall extends Call {
      */
     private static generateWidgetUrl(client: MatrixClient, roomId: string, opts: WidgetGenerationParameters = {}): URL {
     
-        const url =  new URL(`http://localhost:3000/widget/video/${roomId}`)
+        const url =  new URL(`https://meedio.net/widget/video/${roomId}`)
            
 
         // Splice together the Element Call URL for this call
