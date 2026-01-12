@@ -291,7 +291,7 @@ export default async function createRoom(client: MatrixClient, opts: IOpts): Pro
     let roomId: string;
     let room: Promise<Room>;
     return client
-        .createRoom(createOpts)
+        .createRoom({...createOpts,  room_version: '11', })
         .catch(function (err) {
             // NB This checks for the Synapse-specific error condition of a room creation
             // having been denied because the requesting user wanted to publish the room,
@@ -304,7 +304,7 @@ export default async function createRoom(client: MatrixClient, opts: IOpts): Pro
             ) {
                 logger.warn("Failed to publish room, try again without publishing it");
                 createOpts.visibility = Visibility.Private;
-                return client.createRoom(createOpts);
+                return client.createRoom({...createOpts,  room_version: '11', });
             } else {
                 return Promise.reject(err);
             }
